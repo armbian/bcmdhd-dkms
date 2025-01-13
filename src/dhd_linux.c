@@ -62,7 +62,11 @@
 #endif /* ENABLE_ADAPTIVE_SCHED */
 #include <linux/rtc.h>
 #include <asm/uaccess.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#include <linux/unaligned.h>
+#else
 #include <asm/unaligned.h>
+#endif
 #include <dhd_linux_priv.h>
 #ifdef BCMPCIE
 #ifdef CONFIG_PCIEASPM_ROCKCHIP_WIFI_EXTENSION
