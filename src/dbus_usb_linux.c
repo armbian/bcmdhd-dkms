@@ -69,7 +69,11 @@
 #include <linux/spinlock.h>
 #include <linux/list.h>
 #include <asm/uaccess.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#include <linux/unaligned.h>
+#else
 #include <asm/unaligned.h>
+#endif
 #include <dbus.h>
 #include <bcmutils.h>
 #include <bcmdevs_legacy.h>
