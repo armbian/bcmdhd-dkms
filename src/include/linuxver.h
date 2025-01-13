@@ -202,7 +202,9 @@ typedef irqreturn_t(*FN_ISR) (int irq, void *dev_id, struct pt_regs *ptregs);
 #endif /* LINUX_VERS >= 4.11.0 */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
 #include <net/lib80211.h>
+#endif
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29)
 #include <linux/ieee80211.h>
@@ -978,9 +980,9 @@ static inline struct inode *file_inode(const struct file *f)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 // New google android GKI not allow kernel_write/kernel_read, and use
 // below for temporary overcome, and waiting for get rid of that for future
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0))
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif // LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
+#endif // LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
 #define vfs_write(fp, buf, len, pos) kernel_write(fp, buf, len, pos)
 #define vfs_read(fp, buf, len, pos) kernel_read(fp, buf, len, pos)
 int kernel_read_compat(struct file *file, loff_t offset, char *addr, unsigned long count);
