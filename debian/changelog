@@ -1,3 +1,9 @@
+bcmdhd (101.10.591.52.27-3) stable; urgency=medium
+
+  * Add mainline kernel support up to 6.13
+
+ -- Jianfeng Liu <liujianfeng1994@gmail.com>  Sun, 02 Feb 2025 16:50:53 +0800
+
 bcmdhd (101.10.591.52.27-2) stable; urgency=medium
 
   * Package for general architecture
