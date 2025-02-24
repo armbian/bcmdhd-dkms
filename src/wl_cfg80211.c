@@ -631,7 +631,11 @@ wl_cfg80211_set_tx_power(struct wiphy *wiphy,
 #endif /* WL_CFG80211_P2P_DEV_IF */
 #if defined(WL_CFG80211_P2P_DEV_IF)
 static s32 wl_cfg80211_get_tx_power(struct wiphy *wiphy,
-	struct wireless_dev *wdev, s32 *dbm);
+	struct wireless_dev *wdev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	unsigned int link_id,
+#endif
+	s32 *dbm);
 #else
 static s32 wl_cfg80211_get_tx_power(struct wiphy *wiphy, s32 *dbm);
 #endif /* WL_CFG80211_P2P_DEV_IF */
@@ -7665,7 +7669,11 @@ wl_cfg80211_set_tx_power(struct wiphy *wiphy,
 static s32
 #if defined(WL_CFG80211_P2P_DEV_IF)
 wl_cfg80211_get_tx_power(struct wiphy *wiphy,
-	struct wireless_dev *wdev, s32 *dbm)
+	struct wireless_dev *wdev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+	unsigned int link_id,
+#endif
+	s32 *dbm)
 #else
 wl_cfg80211_get_tx_power(struct wiphy *wiphy, s32 *dbm)
 #endif /* WL_CFG80211_P2P_DEV_IF */
