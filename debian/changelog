@@ -1,3 +1,9 @@
+bcmdhd (101.10.591.52.27-4) stable; urgency=medium
+
+  * Add mainline kernel support up to 6.14
+
+ -- Jianfeng Liu <liujianfeng1994@gmail.com>  Mon, 24 Feb 2025 15:20:34 +0800
+
 bcmdhd (101.10.591.52.27-3) stable; urgency=medium
 
   * Add mainline kernel support up to 6.13
