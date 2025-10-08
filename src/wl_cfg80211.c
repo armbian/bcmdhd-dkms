@@ -591,7 +591,11 @@ static int wl_cfg80211_is_wfa_cap_ie(wlcfg_assoc_info_t *info, struct bcm_cfg802
 /*
  * cfg80211_ops api/callback list
  */
-static s32 wl_cfg80211_set_wiphy_params(struct wiphy *wiphy, u32 changed);
+static s32 wl_cfg80211_set_wiphy_params(struct wiphy *wiphy,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx,
+#endif
+	u32 changed);
 #ifdef WLAIBSS_MCHAN
 static bcm_struct_cfgdev* bcm_cfg80211_add_ibss_if(struct wiphy *wiphy, char *name);
 static s32 bcm_cfg80211_del_ibss_if(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev);
@@ -623,6 +627,9 @@ static s32 wl_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev,
 #if defined(WL_CFG80211_P2P_DEV_IF)
 static s32
 wl_cfg80211_set_tx_power(struct wiphy *wiphy, struct wireless_dev *wdev,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0))
+	int radio_idx,
+#endif
 	enum nl80211_tx_power_setting type, s32 mbm);
 #else
 static s32
@@ -632,6 +639,9 @@ wl_cfg80211_set_tx_power(struct wiphy *wiphy,
 #if defined(WL_CFG80211_P2P_DEV_IF)
 static s32 wl_cfg80211_get_tx_power(struct wiphy *wiphy,
 	struct wireless_dev *wdev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx,
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	unsigned int link_id,
 #endif
@@ -3409,7 +3419,11 @@ static s32 wl_set_retry(struct net_device *dev, u32 retry, bool l)
 	return err;
 }
 
-static s32 wl_cfg80211_set_wiphy_params(struct wiphy *wiphy, u32 changed)
+static s32 wl_cfg80211_set_wiphy_params(struct wiphy *wiphy,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx,
+#endif
+	u32 changed)
 {
 	struct bcm_cfg80211 *cfg = (struct bcm_cfg80211 *)wiphy_priv(wiphy);
 	struct net_device *ndev = bcmcfg_to_prmry_ndev(cfg);
@@ -7620,6 +7634,9 @@ exit:
 static s32
 #if defined(WL_CFG80211_P2P_DEV_IF)
 wl_cfg80211_set_tx_power(struct wiphy *wiphy, struct wireless_dev *wdev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx,
+#endif
 	enum nl80211_tx_power_setting type, s32 mbm)
 #else
 wl_cfg80211_set_tx_power(struct wiphy *wiphy,
@@ -7670,6 +7687,9 @@ static s32
 #if defined(WL_CFG80211_P2P_DEV_IF)
 wl_cfg80211_get_tx_power(struct wiphy *wiphy,
 	struct wireless_dev *wdev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx,
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
 	unsigned int link_id,
 #endif
