@@ -251,7 +251,11 @@ dhd_dbg_ring_push(dhd_dbg_ring_t *ring, dhd_dbg_ring_entry_t *hdr, void *data)
 	 * If an interrupt arise after holding ring lock, It could try the same lock.
 	 * This is to use the ring lock as spin_lock_bh instead of spin_lock_irqsave.
 	 */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 19, 0)
 	if (in_irq()) {
+#else
+	if (in_hardirq()) {
+#endif
 		return BCME_BUSY;
 	}
 #endif /* defined(__linux__) */
