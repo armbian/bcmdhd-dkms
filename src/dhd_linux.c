@@ -73,6 +73,9 @@
 #include <rk_dhd_pcie_linux.h>
 #endif /* CONFIG_PCIEASPM_ROCKCHIP_WIFI_EXTENSION */
 #endif /* BCMPCIE */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
+#include <net/rps.h>
+#endif
 
 #include <epivers.h>
 #include <bcmutils.h>
@@ -22257,7 +22260,11 @@ dhd_print_kirqstats(dhd_pub_t *dhd, unsigned int irq_num)
 	bcm_bprintf(&strbuf, "dhd irq %u:", irq_num);
 	for_each_online_cpu(i)
 		bcm_bprintf(&strbuf, "%10u ",
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
 			desc->kstat_irqs ? *per_cpu_ptr(desc->kstat_irqs, i) : 0);
+#else
+			desc->kstat_irqs ? *per_cpu_ptr(desc->kstat_irqs, i) : (struct irqstat) { });
+#endif
 	if (desc->irq_data.chip) {
 		if (desc->irq_data.chip->name)
 			bcm_bprintf(&strbuf, " %8s", desc->irq_data.chip->name);
