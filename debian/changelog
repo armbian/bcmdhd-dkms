@@ -1,3 +1,15 @@
+bcmdhd (101.10.591.52.27-6) stable; urgency=medium
+
+  [ Alexey Belyaev ]
+  * fix api change since v6.17
+
+  [ Jianfeng Liu ]
+  * fix api change since v6.19
+  * limit build on rockchip vendor kernel with CONFIG_WL_ROCKCHIP
+  * fix pcie build up to kernel v6.19
+
+ -- Jianfeng Liu <liujianfeng1994@gmail.com>  Fri, 23 Jan 2026 17:22:15 +0800
+
 bcmdhd (101.10.591.52.27-5) stable; urgency=medium
 
   * fix api change of del_timer since v6.15
