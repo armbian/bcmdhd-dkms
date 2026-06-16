@@ -9292,7 +9292,11 @@ wl_cfg80211_dump_station(struct wiphy *wiphy, struct net_device *ndev,
 
 	if (idx < le32_to_cpu(cfg->assoclist.count)) {
 		(void)memcpy_s(mac, ETH_ALEN, cfg->assoclist.mac[idx], ETH_ALEN);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0))
+		return wl_cfg80211_get_station(wiphy, ndev->ieee80211_ptr, mac, sinfo);
+#else
 		return wl_cfg80211_get_station(wiphy, ndev, mac, sinfo);
+#endif
 	}
 
 	return -ENOENT;
