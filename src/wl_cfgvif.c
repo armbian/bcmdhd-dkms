@@ -5239,7 +5239,11 @@ wl_notify_connect_status_ap(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 			return -EINVAL;
 		}
 #endif /* STA_MGMT */
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0))
+		cfg80211_new_sta(ndev->ieee80211_ptr, e->addr.octet, &sinfo, GFP_ATOMIC);
+	#else
 		cfg80211_new_sta(ndev, e->addr.octet, &sinfo, GFP_ATOMIC);
+	#endif
 #ifdef WL_WPS_SYNC
 		wl_wps_session_update(ndev, WPS_STATE_LINKUP, e->addr.octet);
 #endif /* WL_WPS_SYNC */
@@ -5266,7 +5270,11 @@ wl_notify_connect_status_ap(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 			return -EINVAL;
 		}
 #endif /* STA_MGMT */
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0))
+		cfg80211_del_sta(ndev->ieee80211_ptr, e->addr.octet, GFP_ATOMIC);
+	#else
 		cfg80211_del_sta(ndev, e->addr.octet, GFP_ATOMIC);
+	#endif
 #ifdef WL_WPS_SYNC
 		wl_wps_session_update(ndev, WPS_STATE_LINKDOWN, e->addr.octet);
 #endif /* WL_WPS_SYNC */
