@@ -5653,8 +5653,15 @@ wl_priortize_scan_over_listen(struct bcm_cfg80211 *cfg,
 
 s32
 #if defined(WL_CFG80211_P2P_DEV_IF)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
+/* 7.2 added rx_addr to the remain_on_channel op; unused here (no MLO support) */
+wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
+	struct ieee80211_channel *channel, unsigned int duration, u64 *cookie,
+	const u8 *rx_addr)
+#else
 wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct ieee80211_channel *channel, unsigned int duration, u64 *cookie)
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0) */
 #else
 wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct ieee80211_channel *channel,
@@ -5669,6 +5676,9 @@ wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
 	struct wireless_dev *wdev;
 
+#if defined(WL_CFG80211_P2P_DEV_IF) && LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
+	BCM_REFERENCE(rx_addr);
+#endif
 	RETURN_EIO_IF_NOT_UP(cfg);
 
 	ndev = cfgdev_to_wlc_ndev(cfgdev, cfg);

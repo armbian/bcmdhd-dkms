@@ -43,6 +43,43 @@
 #include <typedefs.h>
 #include <linux/version.h>
 
+/*
+ * Linux 7.2 removed strncpy(): both the declaration in <linux/string.h> and the
+ * implementation in lib/string.c are gone, the API having been deprecated in
+ * favour of strscpy(). This driver calls strncpy() in 42 places, plus wherever
+ * bcm_strncpy_s() from bcmutils.h is used, so without it the build fails with
+ * "implicit declaration of function 'strncpy'" and then would not link.
+ *
+ * Provide what the kernel used to, byte for byte the pre-removal lib/string.c
+ * implementation. Converting the call sites to strscpy() instead is not
+ * equivalent: strscpy() always NUL-terminates and never pads, whereas strncpy()
+ * pads the remainder of the destination with NULs and may leave it
+ * unterminated. Several call sites here copy into fixed-size fields that are
+ * later handled as padded buffers, so switching would be a silent behaviour
+ * change in vendor code we cannot properly test.
+ *
+ * linuxver.h is reachable from every file in the driver that calls strncpy(),
+ * so this single definition covers all of them. Define BCMDHD_HAVE_STRNCPY to
+ * suppress it on a kernel that still provides its own.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0) && !defined(BCMDHD_HAVE_STRNCPY)
+#include <linux/string.h>
+#undef strncpy
+static inline char *strncpy(char *dest, const char *src, size_t count)
+{
+	char *tmp = dest;
+
+	while (count) {
+		if ((*tmp = *src) != '\0')
+			src++;
+		tmp++;
+		count--;
+	}
+
+	return dest;
+}
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0) */
+
 #ifndef RHEL_RELEASE_CODE
 #define RHEL_RELEASE_CODE	(0)
 #endif
