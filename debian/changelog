@@ -1,3 +1,15 @@
+bcmdhd (101.10.591.52.27-8) stable; urgency=medium
+
+  [ Igor Pecovnik ]
+  * fix build on Linux 7.2: provide strncpy(), removed from the kernel
+  * fix build on Linux 7.2: remain_on_channel() gained an rx_addr argument
+
+  [ EvilOlaf ]
+  * fix build for 7.1
+  * fix Linux 7.1 cfg80211 API compatibility - fix dump_station call
+
+ -- Igor Pecovnik <igor@armbian.com>  Wed, 02 Sep 2026 09:22:18 +0200
+
 bcmdhd (101.10.591.52.27-6) stable; urgency=medium
 
   [ Alexey Belyaev ]
