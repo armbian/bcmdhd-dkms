@@ -1,3 +1,13 @@
+bcmdhd (101.10.591.52.27-9) stable; urgency=medium
+
+  [ Alexey Belyaev ]
+  * fix build on kernels that backported the cfg80211_port_authorized
+    td_bitmap arguments: the 5-argument call was gated at 6.2.0, so a 6.1.x
+    kernel carrying the change took the old 3-argument branch and failed with
+    "too few arguments to function 'cfg80211_port_authorized'"
+
+ -- Igor Pecovnik <igor@armbian.com>  Sat, 12 Sep 2026 21:25:37 +0200
+
 bcmdhd (101.10.591.52.27-8) stable; urgency=medium
 
   [ Igor Pecovnik ]
