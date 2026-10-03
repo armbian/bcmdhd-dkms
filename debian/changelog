@@ -1,3 +1,15 @@
+bcmdhd (101.10.591.52.27-10) stable; urgency=medium
+
+  [ defcom5-rockchip ]
+  * wl_cfg80211: handle NL80211_WPA_VERSION_3 in wl_set_wpa_version(). wpa_supplicant
+    2.11 (Ubuntu 25.10/26.04, Fedora 40+) signals WPA3-Personal with VERSION_3 alone,
+    where 2.10 sent VERSION_2; the driver fell through to WPA_AUTH_DISABLED, so the
+    firmware tried an open association carrying an SAE RSN IE and every WPA3 or
+    WPA2/WPA3 AP refused it (deauth reason 13). Same fix as the in-kernel copy
+    (armbian/linux-rockchip#561), mirroring brcmfmac's brcmf_set_wpa_version().
+
+ -- defcom5-rockchip <286489597+defcom5-rockchip@users.noreply.github.com>  Sat, 03 Oct 2026 21:34:20 +0000
+
 bcmdhd (101.10.591.52.27-9) stable; urgency=medium
 
   [ Alexey Belyaev ]
