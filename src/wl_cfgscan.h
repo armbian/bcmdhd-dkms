@@ -148,7 +148,11 @@ extern void wl_cfgscan_listen_complete_work(struct work_struct *work);
 extern s32 wl_cfgscan_notify_listen_complete(struct bcm_cfg80211 *cfg);
 extern s32 wl_cfgscan_cancel_listen_on_channel(struct bcm_cfg80211 *cfg, bool notify_user);
 #if defined(WL_CFG80211_P2P_DEV_IF)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+extern s32 wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
+	struct ieee80211_channel *channel, unsigned int duration, u64 cookie,
+	const u8 *rx_addr);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
 extern s32 wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct ieee80211_channel *channel, unsigned int duration, u64 *cookie,
 	const u8 *rx_addr);
