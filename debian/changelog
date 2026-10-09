@@ -8,7 +8,12 @@ bcmdhd (101.10.591.52.27-10) stable; urgency=medium
     WPA2/WPA3 AP refused it (deauth reason 13). Same fix as the in-kernel copy
     (armbian/linux-rockchip#561), mirroring brcmfmac's brcmf_set_wpa_version().
 
- -- defcom5-rockchip <286489597+defcom5-rockchip@users.noreply.github.com>  Sat, 03 Oct 2026 21:34:20 +0000
+  [ EvilOlaf ]
+  * fix build on Linux 7.3: remain_on_channel and mgmt_tx get the cookie
+    as u64 by value, assigned by cfg80211. Keep that cookie as the ROC id
+    and TX status id, so cancel, expiry and TX status still match.
+
+ -- Igor Pecovnik <igor@armbian.com>  Fri, 09 Oct 2026 08:26:04 +0200
 
 bcmdhd (101.10.591.52.27-9) stable; urgency=medium
 
