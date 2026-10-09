@@ -5653,7 +5653,12 @@ wl_priortize_scan_over_listen(struct bcm_cfg80211 *cfg,
 
 s32
 #if defined(WL_CFG80211_P2P_DEV_IF)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+/* 7.3 passes the cookie by value (cfg80211 allocates it); 7.2 added rx_addr */
+wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
+	struct ieee80211_channel *channel, unsigned int duration, u64 roc_cookie,
+	const u8 *rx_addr)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
 /* 7.2 added rx_addr to the remain_on_channel op; unused here (no MLO support) */
 wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct ieee80211_channel *channel, unsigned int duration, u64 *cookie,
@@ -5675,6 +5680,10 @@ wl_cfgscan_remain_on_channel(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct net_device *ndev = NULL;
 	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
 	struct wireless_dev *wdev;
+#if defined(WL_CFG80211_P2P_DEV_IF) && LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+	/* 7.3: alias the by-value cookie so the body below keeps using *cookie */
+	u64 *cookie = &roc_cookie;
+#endif
 
 #if defined(WL_CFG80211_P2P_DEV_IF) && LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0)
 	BCM_REFERENCE(rx_addr);
@@ -5804,11 +5813,17 @@ exit:
 #if defined(WL_ENABLE_P2P_IF)
 		cfg->remain_on_chan_type = channel_type;
 #endif /* WL_ENABLE_P2P_IF */
+#if defined(WL_CFG80211_P2P_DEV_IF) && LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+		/* cfg80211 owns the cookie; adopt it as our ROC id (matched on cancel/expiry) */
+		cfg->last_roc_id = *cookie;
+		BCM_REFERENCE(id);
+#else
 		id = ++cfg->last_roc_id;
 		if (id == 0) {
 			id = ++cfg->last_roc_id;
 		}
 		*cookie = id;
+#endif
 
 		/* Notify userspace that listen has started */
 		CFG80211_READY_ON_CHANNEL(cfgdev, *cookie, channel, channel_type, duration, flags);

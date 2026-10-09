@@ -11181,7 +11181,11 @@ exit:
 
 #define MAX_NUM_OF_ASSOCIATED_DEV       64
 static s32
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0))
+/* 7.3: cfg80211 allocates the cookie and passes it by value */
+wl_cfg80211_mgmt_tx(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
+	struct cfg80211_mgmt_tx_params *params, u64 mgmt_cookie)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 wl_cfg80211_mgmt_tx(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	struct cfg80211_mgmt_tx_params *params, u64 *cookie)
 #else
@@ -11217,6 +11221,10 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 	u32 id;
 	bool ack = false;
 	s8 eabuf[ETHER_ADDR_STR_LEN];
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0))
+	/* 7.3: use the cfg80211-supplied cookie as-is (reported via mgmt_tx_status) */
+	u64 *cookie = &mgmt_cookie;
+#endif
 
 	WL_DBG(("Enter \n"));
 
@@ -11262,11 +11270,16 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, bcm_struct_cfgdev *cfgdev,
 			return -EFAULT;
 		}
 	}
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0))
+	/* cfg80211 owns the cookie; keep it and use it as the FW packetId below */
+	BCM_REFERENCE(id);
+#else
 	*cookie = 0;
 	id = cfg->send_action_id++;
 	if (id == 0)
 		id = cfg->send_action_id++;
 	*cookie = id;
+#endif
 	mgmt = (const struct ieee80211_mgmt *)buf;
 	if (ieee80211_is_mgmt(mgmt->frame_control)) {
 		if (ieee80211_is_probe_resp(mgmt->frame_control)) {
