@@ -3,12 +3,12 @@
 #include <dhd_linux.h>
 #include <linux/gpio.h>
 #ifdef BCMDHD_DTS
-#if __has_include(<linux/of_gpio.h>)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(7, 1, 0))
 #include <linux/of_gpio.h>
 #else
 #include <linux/of.h>
 #include <linux/gpio/driver.h>
-/* of_get_named_gpio() is gone since <linux/of_gpio.h> was removed; resolve the legacy number by hand */
+/* Linux 7.1 removed <linux/of_gpio.h> and of_get_named_gpio(); resolve the legacy number by hand */
 static int dhd_of_get_named_gpio(const struct device_node *np, const char *propname, int index)
 {
 	struct of_phandle_args args;
