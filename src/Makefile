@@ -61,7 +61,7 @@ CONFIG_BCMDHD_TPUT := y
 #CONFIG_BCMDHD_ADAPTER_INDEX := 0
 
 CONFIG_MACH_PLATFORM := y
-#CONFIG_BCMDHD_DTS := y
+CONFIG_BCMDHD_DTS := y
 
 LINUXDIR  = /lib/modules/$(shell uname -r)/build
 PWD = $(shell pwd)
@@ -71,6 +71,7 @@ ARCH = arm64
 
 CONFIG_BCMDHD_FW_PATH="/lib/firmware/ap6275p/fw_bcmdhd.bin"
 CONFIG_BCMDHD_NVRAM_PATH="/lib/firmware/ap6275p/nvram.txt"
+CONFIG_BCMDHD_CLM_PATH="/lib/firmware/ap6275p/clm_bcmdhd.blob"
 
 DHDCFLAGS = -Wall -Wstrict-prototypes -Wno-date-time -Wno-strict-prototypes   \
 	-Wno-uninitialized -Wno-unused-but-set-variable -Wno-address	      \
@@ -459,6 +460,17 @@ ifeq ($(CONFIG_BCMDHD_FW_PATH),)
 	DHDCFLAGS += -DCONFIG_BCMDHD_FW_PATH="\"/vendor/etc/firmware/fw_bcmdhd.bin\""
 	DHDCFLAGS += -DCONFIG_BCMDHD_NVRAM_PATH="\"/vendor/etc/firmware/nvram.txt\""
 	DHDCFLAGS += -DCONFIG_BCMDHD_CLM_PATH="\"/vendor/etc/firmware/clm_bcmdhd.blob\""
+else
+# Built out of tree (DKMS), the paths above are plain make variables, not Kconfig
+# symbols from autoconf.h, so pass them on or dhd.h falls back to Android's
+# /system/vendor/etc/wifi. Like Kconfig strings, the values carry their quotes.
+	DHDCFLAGS += -DCONFIG_BCMDHD_FW_PATH='$(CONFIG_BCMDHD_FW_PATH)'
+ifneq ($(CONFIG_BCMDHD_NVRAM_PATH),)
+	DHDCFLAGS += -DCONFIG_BCMDHD_NVRAM_PATH='$(CONFIG_BCMDHD_NVRAM_PATH)'
+endif
+ifneq ($(CONFIG_BCMDHD_CLM_PATH),)
+	DHDCFLAGS += -DCONFIG_BCMDHD_CLM_PATH='$(CONFIG_BCMDHD_CLM_PATH)'
+endif
 endif
 	DHDCFLAGS += -DCONFIG_BCMDHD_CONFIG_PATH="\"/vendor/etc/firmware/config.txt\""
 endif
