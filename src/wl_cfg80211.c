@@ -42,6 +42,7 @@
 
 #include <ethernet.h>
 #include <linux/kernel.h>
+#include <linux/overflow.h>
 #include <linux/kthread.h>
 #include <linux/netdevice.h>
 #include <linux/sched.h>
@@ -19200,7 +19201,7 @@ static void wl_flush_eq(struct bcm_cfg80211 *cfg)
 	while (!list_empty_careful(&cfg->eq_list)) {
 		BCM_SET_LIST_FIRST_ENTRY(e, &cfg->eq_list, struct wl_event_q, eq_list);
 		list_del(&e->eq_list);
-		MFREE(cfg->osh, e, e->datalen + sizeof(struct wl_event_q));
+		MFREE(cfg->osh, e, struct_size(e, edata, e->datalen));
 	}
 	wl_unlock_eq(cfg, flags);
 }
@@ -19234,14 +19235,17 @@ wl_enq_event(struct bcm_cfg80211 *cfg, struct net_device *ndev, u32 event,
 {
 	struct wl_event_q *e;
 	s32 err = 0;
-	uint32 evtq_size;
+	size_t evtq_size;
 	uint32 data_len;
 	unsigned long flags;
 
 	data_len = 0;
 	if (data)
 		data_len = ntoh32(msg->datalen);
-	evtq_size = (uint32)(sizeof(struct wl_event_q) + data_len);
+	evtq_size = struct_size(e, edata, data_len);
+	/* The OSL allocator accepts a 32-bit size. */
+	if (evtq_size == SIZE_MAX || evtq_size > U32_MAX)
+		return -EOVERFLOW;
 	e = (struct wl_event_q *)MALLOCZ(cfg->osh, evtq_size);
 	if (unlikely(!e)) {
 		WL_ERR(("event alloc failed\n"));
@@ -19262,7 +19266,7 @@ wl_enq_event(struct bcm_cfg80211 *cfg, struct net_device *ndev, u32 event,
 
 static void wl_put_event(struct bcm_cfg80211 *cfg, struct wl_event_q *e)
 {
-	MFREE(cfg->osh, e, e->datalen + sizeof(struct wl_event_q));
+	MFREE(cfg->osh, e, struct_size(e, edata, e->datalen));
 }
 
 static s32 wl_config_infra(struct bcm_cfg80211 *cfg, struct net_device *ndev, u16 iftype)
