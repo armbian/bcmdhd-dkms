@@ -1216,7 +1216,7 @@ struct beacon_proberesp {
 	__le64 timestamp;
 	__le16 beacon_int;
 	__le16 capab_info;
-	u8 variable[0];
+	u8 variable[];
 } __attribute__ ((packed));
 
 /* driver configuration */
@@ -1238,7 +1238,7 @@ struct wl_cfg80211_bss_info {
 	u16 channel;
 	s16 rssi;
 	u16 frame_len;
-	u8 frame_buf[1];
+	u8 frame_buf[];
 };
 
 /* basic structure of scan request */
@@ -1259,7 +1259,7 @@ struct wl_event_q {
 	u32 id;			/* counter to track events */
 	wl_event_msg_t emsg;
 	u32 datalen;
-	s8 edata[1];
+	s8 edata[];
 };
 
 /* security information with currently associated ap */
