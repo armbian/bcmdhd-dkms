@@ -38,6 +38,7 @@
 
 #include <ethernet.h>
 #include <linux/kernel.h>
+#include <linux/overflow.h>
 #include <linux/kthread.h>
 #include <linux/netdevice.h>
 #include <linux/sched.h>
@@ -346,6 +347,7 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 	log_conn_event_t *event_data = NULL;
 	tlv_log *tlv_data = NULL;
 	u32 alloc_len;
+	size_t bss_alloc_len;
 	u32 payload_len;
 	s32 mgmt_type;
 	s32 signal;
@@ -373,8 +375,13 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 	}
 
 	aflags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
-	notif_bss_info = (struct wl_cfg80211_bss_info *)MALLOCZ(cfg->osh,
-		sizeof(*notif_bss_info) + sizeof(*mgmt) - sizeof(u8) + WL_BSS_INFO_MAX);
+	BUILD_BUG_ON(offsetof(struct ieee80211_mgmt, u.beacon.variable) !=
+		offsetof(struct ieee80211_mgmt, u.probe_resp.variable));
+	bss_alloc_len = struct_size(notif_bss_info, frame_buf,
+		offsetof(struct ieee80211_mgmt, u.beacon.variable) + WL_BSS_INFO_MAX);
+	if (bss_alloc_len == SIZE_MAX || bss_alloc_len > U32_MAX)
+		return -EOVERFLOW;
+	notif_bss_info = (struct wl_cfg80211_bss_info *)MALLOCZ(cfg->osh, bss_alloc_len);
 	if (unlikely(!notif_bss_info)) {
 		WL_ERR(("notif_bss_info alloc failed\n"));
 		return -ENOMEM;
@@ -386,8 +393,7 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 #endif /* WL_6G_BAND */
 		CHSPEC_IS5G(bi->chanspec) || CHSPEC_IS2G(bi->chanspec))) {
 		WL_ERR(("No valid band"));
-		MFREE(cfg->osh, notif_bss_info, sizeof(*notif_bss_info)
-			+ sizeof(*mgmt) - sizeof(u8) + WL_BSS_INFO_MAX);
+		MFREE(cfg->osh, notif_bss_info, bss_alloc_len);
 		return -EINVAL;
 	}
 
@@ -428,16 +434,18 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 		err = -EINVAL;
 		goto out_err;
 	}
-	wl_mrg_ie(cfg, ((u8 *) bi) + bi->ie_offset, bi->ie_length);
-	wl_cp_ie(cfg, beacon_proberesp->variable, WL_BSS_INFO_MAX -
-		offsetof(struct wl_cfg80211_bss_info, frame_buf));
+	err = wl_mrg_ie(cfg, ((u8 *) bi) + bi->ie_offset, bi->ie_length);
+	if (err)
+		goto out_err;
+	err = wl_cp_ie(cfg, beacon_proberesp->variable, WL_BSS_INFO_MAX);
+	if (err)
+		goto out_err;
 	notif_bss_info->frame_len = offsetof(struct ieee80211_mgmt,
 		u.beacon.variable) + wl_get_ielen(cfg);
 	freq = wl_channel_to_frequency(notif_bss_info->channel, notif_bss_info->band);
 	if (freq == 0) {
 		WL_ERR(("Invalid channel, failed to change channel to freq\n"));
-		MFREE(cfg->osh, notif_bss_info, sizeof(*notif_bss_info)
-			+ sizeof(*mgmt) - sizeof(u8) + WL_BSS_INFO_MAX);
+		MFREE(cfg->osh, notif_bss_info, bss_alloc_len);
 		return -EINVAL;
 	}
 	channel = ieee80211_get_channel(wiphy, freq);
@@ -454,8 +462,7 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 		notif_bss_info->frame_len, tmp_buf));
 	if (unlikely(!channel)) {
 		WL_ERR(("ieee80211_get_channel error\n"));
-		MFREE(cfg->osh, notif_bss_info, sizeof(*notif_bss_info)
-			+ sizeof(*mgmt) - sizeof(u8) + WL_BSS_INFO_MAX);
+		MFREE(cfg->osh, notif_bss_info, bss_alloc_len);
 		return -EINVAL;
 	}
 
@@ -528,8 +535,7 @@ s32 wl_inform_single_bss(struct bcm_cfg80211 *cfg, wl_bss_info_v109_t *bi, bool 
 	}
 
 out_err:
-	MFREE(cfg->osh, notif_bss_info, sizeof(*notif_bss_info)
-			+ sizeof(*mgmt) - sizeof(u8) + WL_BSS_INFO_MAX);
+	MFREE(cfg->osh, notif_bss_info, bss_alloc_len);
 	return err;
 }
 
