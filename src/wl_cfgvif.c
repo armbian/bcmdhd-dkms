@@ -4227,7 +4227,7 @@ wl_cfg80211_start_ap(
 #else
 			dev->ieee80211_ptr->preset_chandef.chan,
 #endif /* LINUX_VER >= 5.19.2 || CFG80211_BKPORT_MLO */
-			info->chandef.width) < 0)) {
+			info->chandef.width)) < 0) {
 		WL_ERR(("Set channel failed \n"));
 		goto fail;
 	}
