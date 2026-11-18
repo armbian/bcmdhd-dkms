@@ -12078,7 +12078,7 @@ static int wl_cfg80211_dump_survey_ap(struct wiphy *wiphy, struct net_device *nd
 	chan = &band->channels[idx];
 	/* Setting current channel to the requested channel */
 	if ((err = wl_cfg80211_set_channel(wiphy, ndev, chan,
-			NL80211_CHAN_WIDTH_20) < 0)) {
+			NL80211_CHAN_WIDTH_20)) < 0) {
 		/*
 		 * FIXME:
 		 *
@@ -21510,7 +21510,7 @@ s32 wl_cfg80211_up(struct net_device *net)
 	cfg->inet_ndev = net;
 #endif /* WL_DUAL_STA */
 	if ((err = wldev_ioctl_get(bcmcfg_to_prmry_ndev(cfg), WLC_GET_VERSION, &val,
-		sizeof(int)) < 0)) {
+		sizeof(int))) < 0) {
 		WL_ERR(("WLC_GET_VERSION failed, err=%d\n", err));
 		return err;
 	}
