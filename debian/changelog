@@ -6,6 +6,7 @@ bcmdhd (101.10.591.52.27-11) stable; urgency=medium
   * Remove duplicate BIP-GMAC cipher suites.
   * Support the key management API changes in Linux 7.4.
   * Use flexible event and scan buffers with checked allocation sizes.
+  * Return the error codes that misplaced parentheses lost.
 
  -- KingFalse <26541059+KingFalse@users.noreply.github.com>  Sun, 15 Nov 2026 08:38:26 +0800
 
