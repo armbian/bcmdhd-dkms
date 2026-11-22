@@ -2480,10 +2480,14 @@ lbtxp_onoff(struct dhd_info *dev, const char *buf, size_t count)
 	}
 	atomic_set(&dhd->lb_txp_active, onoff);
 
-	/* Since the scheme is changed clear the counters */
-	for (i = 0; i < NR_CPUS; i++) {
-		DHD_LB_STATS_CLR(dhd->txp_percpu_run_cnt[i]);
-		DHD_LB_STATS_CLR(dhd->tx_start_percpu_run_cnt[i]);
+	/* Since the scheme is changed clear the counters.
+	 * dhd_lb_stats_init() allocates them for num_possible_cpus() entries.
+	 */
+	for (i = 0; i < num_possible_cpus(); i++) {
+		if (dhd->txp_percpu_run_cnt)
+			DHD_LB_STATS_CLR(dhd->txp_percpu_run_cnt[i]);
+		if (dhd->tx_start_percpu_run_cnt)
+			DHD_LB_STATS_CLR(dhd->tx_start_percpu_run_cnt[i]);
 	}
 
 	return count;
